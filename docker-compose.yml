@@ -1,0 +1,85 @@
+services:
+  db:
+    image: postgres:13.2
+    ports:
+      - "5432:5432"
+    command: [ "postgres", "-c", "log_statement=all", "-c", "log_destination=stderr" ]
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres", "-d", "postgres" ]
+      interval: 1s
+      retries: 20
+    env_file:
+      - etc/.env.db
+
+  bot:
+    build:
+      dockerfile: Dockerfile
+      context: .
+#    command: uvicorn bot.app:start_polling --factory --port 8050 --workers=1 --host 0.0.0.0
+    command: python -m bot
+    volumes:
+      - ./:/code/
+    ports:
+      - "8050:8050"
+    depends_on:
+      - db
+
+  redis:
+    image: redis:6.2.4
+    ports:
+      - "6379:6379"
+
+#  web:
+#    build:
+#      dockerfile: Dockerfile
+#      context: .
+#    command: >
+#      sh -c "python manage.py makemigrations
+#      && python manage.py migrate
+#      && python manage.py runserver 0.0.0.0:8000
+#      && echo y"
+#
+#    volumes:
+#      - ./:/code/
+#    ports:
+#      - "8000:8000"
+#    depends_on:
+#      - db
+
+
+#
+#  worker:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    command: ['celery', '-A','worker.celery_app.app', 'worker', '-l', 'info']
+#    volumes:
+#      - ./:/code
+#    depends_on:
+#      - redis
+#
+#  exporter:
+#    image: danihodovic/celery-exporter
+#    ports:
+#      - "9808:9808"
+#    command:
+#      - "--broker-url=redis://redis:6379"
+#
+#  prometheus:
+#    image: prom/prometheus
+#    command:
+#      - "--config.file=/code/prometheus_config.yml"
+#    ports:
+#      - "9090:9090"
+#    restart: unless-stopped
+#    volumes:
+#      - ./etc/prometheus_config.yml:/code/prometheus_config.yml
+#
+#  grafana:
+#    image: grafana/grafana-enterprise
+#    restart: unless-stopped
+#    ports:
+#      - '3000:3000'
+#    volumes:
+#      - ./etc/grafana.ini:/code/grafana.ini
+#    command: ['--config', '/code/grafana.ini']
