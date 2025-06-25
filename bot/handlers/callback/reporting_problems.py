@@ -17,8 +17,9 @@ from config import settings
 
 bot_instance = Bot(settings.BOT_TOKEN)
 
-@error_handling
+
 @router.message(UserState.reporting__problems)
+@error_handling
 async def handle_problems_message(message: Message, state: FSMContext) -> None:
     if message.from_user is None:
         return
