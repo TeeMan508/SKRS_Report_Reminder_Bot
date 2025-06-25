@@ -1,3 +1,4 @@
+from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.types import Message
 from .router import router
@@ -10,5 +11,6 @@ async def handle_id_command(message: Message) -> None:
 
     await message.answer(
         f"User Id: <b>{message.from_user.id}</b>\nChat Id: <b>{message.chat.id}</b>",
+        parse_mode=ParseMode.HTML,
     )
 

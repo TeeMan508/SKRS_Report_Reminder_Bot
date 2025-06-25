@@ -1,10 +1,11 @@
 from aiogram import Bot
+from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from sqlalchemy import select, desc
 from sqlalchemy import update
 
-
+from bot.exceptions import NoEntityException
 from bot.utils.error_handling import error_handling
 from bot.handlers.command.register import UserState
 from bot.handlers.command.router import router
@@ -39,10 +40,13 @@ async def handle_problems_message(message: Message, state: FSMContext) -> None:
             order_by(desc(Report.created_at))
         )
 
-        report: Report = report_qs.first()
+        report = report_qs.first()[0]
 
-        text = form_pretty_report(report.progress, report.plans, report.problems)
-        await bot_instance.send_message(settings.ADMIN_TG_UID, text)
+        if not report:
+            raise NoEntityException
+
+        text = form_pretty_report(message.from_user.username ,report.progress, report.plans, report.problems)
+        await bot_instance.send_message(int(settings.GROUP_TG_UID), **text.as_kwargs())
 
     await state.set_state(UserState.active)
     await message.answer(FINISH_TEXT)

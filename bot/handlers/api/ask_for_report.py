@@ -17,16 +17,17 @@ if not os.environ.get("LOCAL_DB_ENABLED"):
 async def ask_for_report() -> None:
     subscribed_users_ids: list[str] = []
     async with async_session() as session:
-        rows = await session.execute(
+        rows_qs = await session.execute(
             select(User).
             where(User.is_subscribed == True)
         )
 
-        if not rows.first():
+        rows = rows_qs.all()
+        if not rows:
             print("No users subscribed!")
             return
 
-        for row in rows.all():
+        for row in rows:
             usr_id = row[0].uid
             subscribed_users_ids.append(usr_id)
 

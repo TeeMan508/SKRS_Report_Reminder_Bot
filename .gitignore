@@ -1,2 +1,4 @@
 etc/.env
 etc/.env.db
+.idea
+.venv

@@ -7,6 +7,7 @@ from sqlalchemy import update
 
 from .register import UserState
 from .router import router
+from ...exceptions import NoEntityException, SameStateException
 from ...logger import logger
 from ...messages import YOU_ARE_NOT_REGISTERED_TEXT, \
     ALREADY_SUBSCRIBED_TEXT, SUBSCRIBED_SUCCESSFULLY_TEXT
@@ -30,12 +31,12 @@ async def handle_subscribe_command(message: Message, state: FSMContext) -> None:
                 where(User.uid == uid)
             )
             obj = rows.first()[0]
-            logger.info(obj)
+
             if not obj:
-                raise FileNotFoundError
+                raise NoEntityException
 
             if obj.is_subscribed:
-                raise TypeError # todo: тайп еррор уже занят, надо кастомный делать...
+                raise SameStateException
 
             await session.execute(
                 update(User).
@@ -45,10 +46,10 @@ async def handle_subscribe_command(message: Message, state: FSMContext) -> None:
 
             await session.commit()
 
-    except (IntegrityError, FileNotFoundError):
+    except (IntegrityError, NoEntityException):
         await message.answer(YOU_ARE_NOT_REGISTERED_TEXT)
         return
-    except TypeError:
+    except SameStateException:
         await message.answer(ALREADY_SUBSCRIBED_TEXT)
         return
 

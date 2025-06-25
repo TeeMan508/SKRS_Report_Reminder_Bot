@@ -7,6 +7,7 @@ from sqlalchemy import update
 
 from .register import UserState
 from .router import router
+from ...exceptions import SameStateException, NoEntityException
 from ...messages import YOU_ARE_NOT_REGISTERED_TEXT, \
     ALREADY_SUBSCRIBED_TEXT, SUBSCRIBED_SUCCESSFULLY_TEXT, ALREADY_UNSUBSCRIBED_TEXT, UNSUBSCRIBED_SUCCESSFULLY_TEXT
 from ...storage.db import async_session
@@ -32,10 +33,10 @@ async def handle_unsubscribe_command(message: Message, state: FSMContext) -> Non
             obj: User = rows.first()[0]
 
             if not obj:
-                raise FileNotFoundError
+                raise NoEntityException
 
             if not obj.is_subscribed:
-                raise TypeError
+                raise SameStateException
 
             await session.execute(
                 update(User).
@@ -48,7 +49,7 @@ async def handle_unsubscribe_command(message: Message, state: FSMContext) -> Non
     except (IntegrityError, FileNotFoundError):
         await message.answer(YOU_ARE_NOT_REGISTERED_TEXT)
         return
-    except TypeError:
+    except SameStateException:
         await message.answer(ALREADY_UNSUBSCRIBED_TEXT)
         return
 
