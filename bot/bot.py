@@ -34,6 +34,7 @@ async def set_bot_commands() -> None:
         [
             BotCommand(command="/register", description="Register in the bot"),
             BotCommand(command="/id", description="Get the user and chat ids"),
+            BotCommand(command="/thread_id", description="Get thread id for the current chat"),
             BotCommand(command="/subscribe", description="Subscribe to notifications"),
             BotCommand(command="/unsubscribe", description="Unsubscribe from notifications"),
         ],

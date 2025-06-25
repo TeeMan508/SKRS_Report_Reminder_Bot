@@ -19,6 +19,7 @@ class Settings(BaseSettings):
 
     ADMIN_TG_UID: str
     GROUP_TG_UID: str
+    TOPIC_THREAD_ID: str
 
     @property
     def db_url(self) -> str:

@@ -46,7 +46,10 @@ async def handle_problems_message(message: Message, state: FSMContext) -> None:
             raise NoEntityException
 
         text = form_pretty_report(message.from_user.username ,report.progress, report.plans, report.problems)
-        await bot_instance.send_message(int(settings.GROUP_TG_UID), **text.as_kwargs())
+        await bot_instance.send_message(int(settings.GROUP_TG_UID),
+                                        **text.as_kwargs(),
+                                        message_thread_id=settings.TOPIC_THREAD_ID
+                                        )
 
     await state.set_state(UserState.active)
     await message.answer(FINISH_TEXT)
