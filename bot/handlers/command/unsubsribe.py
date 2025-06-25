@@ -11,9 +11,11 @@ from ...messages import YOU_ARE_NOT_REGISTERED_TEXT, \
     ALREADY_SUBSCRIBED_TEXT, SUBSCRIBED_SUCCESSFULLY_TEXT, ALREADY_UNSUBSCRIBED_TEXT, UNSUBSCRIBED_SUCCESSFULLY_TEXT
 from ...storage.db import async_session
 from ...storage.models import User
+from ...utils.error_handling import error_handling
 
 
 @router.message(Command("unsubscribe"))
+@error_handling
 async def handle_unsubscribe_command(message: Message, state: FSMContext) -> None:
     if message.from_user is None:
         return
@@ -27,21 +29,23 @@ async def handle_unsubscribe_command(message: Message, state: FSMContext) -> Non
                 select(User).
                 where(User.uid == uid)
             )
-            if not rows.first():
-                raise AttributeError
+            obj: User = rows.first()[0]
 
-            if not rows.first().is_subsribed:
+            if not obj:
+                raise FileNotFoundError
+
+            if not obj.is_subscribed:
                 raise TypeError
 
             await session.execute(
                 update(User).
                 where(User.uid == uid).
-                values(is_subsribed=False)
+                values(is_subscribed=False)
             )
 
             await session.commit()
 
-    except (IntegrityError, AttributeError):
+    except (IntegrityError, FileNotFoundError):
         await message.answer(YOU_ARE_NOT_REGISTERED_TEXT)
         return
     except TypeError:

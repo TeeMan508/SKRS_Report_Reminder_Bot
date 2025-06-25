@@ -1,5 +1,6 @@
 from functools import wraps
 
+from ..logger import logger
 from ..messages import EXCEPTION_TEXT
 from config import settings
 
@@ -9,7 +10,8 @@ def error_handling(func):
     async def wrapper(*args, **kwargs):
         try:
             await func(*args, **kwargs)
-        except: # noqa
+        except Exception as e: # noqa
+            logger.info(e)
             try:
                 await args[0].answer(EXCEPTION_TEXT)
                 # await bot_instance.send_message(
